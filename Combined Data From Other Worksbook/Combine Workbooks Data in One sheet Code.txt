@@ -1,0 +1,55 @@
+Sub CombineDataIntoOneSheet()
+
+Dim Path As String, Filename As String
+Dim wsDest As Worksheet, wsSrc As Worksheet
+Dim lastRow As Long, srcLastRow As Long, srcLastCol As Long
+Dim isFirstSheet As Boolean
+
+'Set folder path
+Path = "C:\Users\Lokesh Lalwani\Desktop\City wise Sales\"
+
+'Set destination sheet (make sure this sheet exists)
+Set wsDest = ThisWorkbook.Sheets("CombinedData")
+
+Filename = Dir(Path & "*.xls")
+
+isFirstSheet = True
+
+Application.ScreenUpdating = False
+Application.DisplayAlerts = False
+
+Do While Filename <> ""
+    Workbooks.Open Filename:=Path & Filename, ReadOnly:=True
+    
+    For Each wsSrc In ActiveWorkbook.Sheets
+        
+        srcLastRow = wsSrc.Cells(Rows.Count, 1).End(xlUp).Row
+        srcLastCol = wsSrc.Cells(1, Columns.Count).End(xlToLeft).Column
+        
+        If srcLastRow > 1 Or isFirstSheet = True Then
+        
+            lastRow = wsDest.Cells(Rows.Count, 1).End(xlUp).Row
+            
+            If isFirstSheet Then
+                isFirstSheet = False
+                wsSrc.Range(wsSrc.Cells(1, 1), wsSrc.Cells(srcLastRow, srcLastCol)).Copy
+                wsDest.Cells(1, 1).PasteSpecial xlPasteValues
+            Else
+                wsSrc.Range(wsSrc.Cells(2, 1), wsSrc.Cells(srcLastRow, srcLastCol)).Copy
+                wsDest.Cells(lastRow + 1, 1).PasteSpecial xlPasteValues
+            End If
+            
+        End If
+        
+    Next wsSrc
+    
+    ActiveWorkbook.Close False
+    Filename = Dir()
+Loop
+
+Application.CutCopyMode = False
+Application.ScreenUpdating = True
+
+MsgBox "All Data Combined in One Sheet!", vbInformation
+
+End Sub
